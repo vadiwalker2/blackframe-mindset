@@ -3,10 +3,10 @@ import { Home, Repeat, CheckSquare, BarChart3, Settings } from "lucide-react";
 
 const items = [
   { to: "/", label: "Today", icon: Home, exact: true },
-  { to: "/routines", label: "Routines", icon: Repeat },
-  { to: "/tasks", label: "Tasks", icon: CheckSquare },
-  { to: "/stats", label: "Stats", icon: BarChart3 },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/routines", label: "Routines", icon: Repeat, exact: false },
+  { to: "/tasks", label: "Tasks", icon: CheckSquare, exact: false },
+  { to: "/stats", label: "Stats", icon: BarChart3, exact: false },
+  { to: "/settings", label: "Settings", icon: Settings, exact: false },
 ] as const;
 
 export function BottomNav() {
