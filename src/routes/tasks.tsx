@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Check, Trash2, Archive, Inbox } from "lucide-react";
+import { Plus, Check, Trash2, Archive, ArchiveRestore, Inbox } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { MOCK_TASKS, type Task } from "@/lib/mock-data";
+import { useStore, toLocalDateStr } from "@/lib/store";
 
 export const Route = createFileRoute("/tasks")({
   head: () => ({
@@ -14,28 +14,31 @@ export const Route = createFileRoute("/tasks")({
   component: TasksPage,
 });
 
-type Filter = "active" | "completed" | "all";
+type Filter = "active" | "completed" | "archived";
 
 function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
+  const { allTasks, today, addTask, toggleTask, deleteTask, archiveTask, unarchiveTask } = useStore();
   const [draft, setDraft] = useState("");
   const [filter, setFilter] = useState<Filter>("active");
 
   const filtered = useMemo(() => {
-    if (filter === "active") return tasks.filter((t) => !t.completed);
-    if (filter === "completed") return tasks.filter((t) => t.completed);
-    return tasks;
-  }, [tasks, filter]);
+    if (filter === "archived") return allTasks.filter((t) => t.archived);
+    if (filter === "completed") return allTasks.filter((t) => !t.archived && t.completedAt);
+    return allTasks.filter((t) => !t.archived && !t.completedAt);
+  }, [allTasks, filter]);
 
-  const add = (e: React.FormEvent) => {
+  const counts = useMemo(() => ({
+    active: allTasks.filter((t) => !t.archived && !t.completedAt).length,
+    completed: allTasks.filter((t) => !t.archived && t.completedAt).length,
+    archived: allTasks.filter((t) => t.archived).length,
+  }), [allTasks]);
+
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!draft.trim()) return;
-    setTasks((ts) => [{ id: crypto.randomUUID(), title: draft.trim(), completed: false, createdAt: new Date().toISOString() }, ...ts]);
+    addTask(draft);
     setDraft("");
   };
-
-  const toggle = (id: string) => setTasks((ts) => ts.map((t) => t.id === id ? { ...t, completed: !t.completed } : t));
-  const remove = (id: string) => setTasks((ts) => ts.filter((t) => t.id !== id));
 
   return (
     <AppShell>
@@ -45,7 +48,7 @@ function TasksPage() {
         subtitle="Persistent. Carries over. Until done."
       />
 
-      <form onSubmit={add} className="mb-4 flex items-center gap-2 glass border border-border/60 rounded-2xl px-4 py-2.5 focus-within:border-foreground/40 transition-colors">
+      <form onSubmit={submit} className="mb-4 flex items-center gap-2 glass border border-border/60 rounded-2xl px-4 py-2.5 focus-within:border-foreground/40 transition-colors">
         <Plus className="w-4 h-4 text-muted-foreground" />
         <input
           value={draft}
@@ -61,15 +64,16 @@ function TasksPage() {
       </form>
 
       <div className="flex gap-1 mb-5 bg-secondary p-1 rounded-xl w-fit">
-        {(["active","completed","all"] as Filter[]).map((f) => (
+        {(["active","completed","archived"] as Filter[]).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-all ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-all flex items-center gap-1.5 ${
               filter === f ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {f}
+            <span className="tabular-nums opacity-60">{counts[f]}</span>
           </button>
         ))}
       </div>
@@ -81,39 +85,49 @@ function TasksPage() {
         </div>
       ) : (
         <ul className="space-y-2">
-          {filtered.map((t) => (
-            <li key={t.id} className="glass border border-border/60 rounded-xl px-4 py-3 flex items-center gap-3 group animate-fade-up">
-              <button
-                onClick={() => toggle(t.id)}
-                className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
-                  t.completed ? "bg-foreground border-foreground" : "border-muted-foreground/40 hover:border-foreground"
-                }`}
-              >
-                {t.completed && <Check className="w-3 h-3 text-background" strokeWidth={3} />}
-              </button>
-              <p className={`text-sm flex-1 truncate ${t.completed ? "text-muted-foreground line-through" : ""}`}>
-                {t.title}
-              </p>
-              {t.carriedOver && (
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground border border-border rounded px-1.5 py-0.5">
-                  Carried
-                </span>
-              )}
-              <button
-                onClick={() => remove(t.id)}
-                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all p-1"
-                aria-label="Delete"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </li>
-          ))}
+          {filtered.map((t) => {
+            const carried = !t.completedAt && !t.archived && toLocalDateStr(new Date(t.createdAt)) !== today;
+            return (
+              <li key={t.id} className="glass border border-border/60 rounded-xl px-4 py-3 flex items-center gap-3 group animate-fade-up">
+                <button
+                  onClick={() => toggleTask(t.id)}
+                  disabled={t.archived}
+                  className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
+                    t.completedAt ? "bg-foreground border-foreground" : "border-muted-foreground/40 hover:border-foreground"
+                  } ${t.archived ? "opacity-50" : ""}`}
+                >
+                  {t.completedAt && <Check className="w-3 h-3 text-background" strokeWidth={3} />}
+                </button>
+                <p className={`text-sm flex-1 truncate ${t.completedAt || t.archived ? "text-muted-foreground line-through" : ""}`}>
+                  {t.title}
+                </p>
+                {carried && (
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground border border-border rounded px-1.5 py-0.5">
+                    Carried
+                  </span>
+                )}
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {t.archived ? (
+                    <button onClick={() => unarchiveTask(t.id)} className="text-muted-foreground hover:text-foreground p-1.5" aria-label="Restore">
+                      <ArchiveRestore className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button onClick={() => archiveTask(t.id)} className="text-muted-foreground hover:text-foreground p-1.5" aria-label="Archive">
+                      <Archive className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button onClick={() => deleteTask(t.id)} className="text-muted-foreground hover:text-destructive p-1.5" aria-label="Delete">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
 
-      <p className="mt-6 text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
-        <Archive className="w-3 h-3" />
-        Completed tasks are archived to history at midnight.
+      <p className="mt-6 text-xs text-muted-foreground text-center">
+        Tasks persist until you archive or delete them. Uncompleted ones carry over each day.
       </p>
     </AppShell>
   );
