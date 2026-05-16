@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { Moon, Sun, Bell, LogOut, Trash2, User, ChevronRight } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useTheme } from "@/lib/theme";
+import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -47,6 +49,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function SettingsPage() {
   const { theme, toggle } = useTheme();
+  const { resetAllData, routines, allTasks } = useStore();
+  const [confirming, setConfirming] = useState(false);
+
+  const handleReset = () => {
+    if (!confirming) { setConfirming(true); return; }
+    resetAllData();
+    setConfirming(false);
+  };
 
   return (
     <AppShell>
@@ -86,13 +96,30 @@ function SettingsPage() {
         <Row icon={Bell} label="Reminders" value="Off" />
       </Section>
 
-      <Section title="Danger zone">
-        <Row icon={Trash2} label="Reset all data" danger />
+      <Section title="Data">
+        <div className="px-4 py-3.5 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Local storage</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {routines.length} routines · {allTasks.length} tasks
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={handleReset}
+          onBlur={() => setConfirming(false)}
+          className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-secondary/50 transition-colors text-left text-destructive"
+        >
+          <Trash2 className="w-4 h-4" />
+          <span className="text-sm font-medium flex-1">
+            {confirming ? "Tap again to confirm" : "Reset all data"}
+          </span>
+        </button>
         <Row icon={LogOut} label="Sign out" />
       </Section>
 
       <p className="text-center text-[11px] text-muted-foreground mt-8">
-        Blackframe v0.1 · Phase 1 preview
+        Blackframe v0.2 · Phase 2 · Local state engine
       </p>
     </AppShell>
   );

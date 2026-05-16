@@ -31,6 +31,7 @@ function StatsPage() {
   const {
     now, routines, allTasks,
     routineStreak, routineCompletionsForDate, scheduledRoutineCountForDate,
+    isRoutineDone,
   } = useStore();
 
   const week = useMemo(() => {
@@ -72,28 +73,6 @@ function StatsPage() {
 
   const maxTasks = Math.max(1, ...week.map((d) => d.tasks));
 
-  const topRoutines = useMemo(() => {
-    return routines
-      .map((r) => {
-        // 7-day completion rate among scheduled days only
-        let scheduledDays = 0, doneDays = 0;
-        for (const d of week) {
-          const wd = (new Date(d.date + "T00:00:00")).getDay();
-          if (r.days.includes(wd as 0|1|2|3|4|5|6)) {
-            scheduledDays++;
-            if (routineCompletionsForDate(d.date) > 0) {
-              // proper check: was THIS routine done that day?
-            }
-          }
-        }
-        // re-compute properly using store's done lookup via isRoutineDone? not exposed in API here — recompute:
-        return null;
-      })
-      .filter(Boolean);
-  }, [routines, week, routineCompletionsForDate]);
-
-  // proper per-routine 7d rate using the store
-  const { isRoutineDone } = useStore();
   const topRoutinesProper = useMemo(() => {
     return routines.map((r) => {
       let scheduled = 0, done = 0;
