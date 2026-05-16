@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Flame, Clock, Trash2, X } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { MOCK_ROUTINES, DAY_LABELS, type Routine, type Weekday } from "@/lib/mock-data";
+import { useStore, type Weekday } from "@/lib/store";
+import { DAY_LABELS } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/routines")({
   head: () => ({
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/routines")({
 });
 
 function RoutinesPage() {
-  const [routines, setRoutines] = useState<Routine[]>(MOCK_ROUTINES);
+  const { routines, addRoutine, deleteRoutine, isRoutineDone, toggleRoutine, routineStreak } = useStore();
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState("");
   const [time, setTime] = useState("07:00");
@@ -27,15 +28,9 @@ function RoutinesPage() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || days.length === 0) return;
-    setRoutines((rs) => [...rs, {
-      id: crypto.randomUUID(), title: title.trim(), time, days, completedToday: false, streak: 0,
-    }]);
+    addRoutine({ title: title.trim(), time, days });
     setTitle(""); setTime("07:00"); setDays([1,2,3,4,5]); setCreating(false);
   };
-
-  const remove = (id: string) => setRoutines((rs) => rs.filter((r) => r.id !== id));
-  const toggle = (id: string) =>
-    setRoutines((rs) => rs.map((r) => r.id === id ? { ...r, completedToday: !r.completedToday } : r));
 
   return (
     <AppShell>
@@ -104,43 +99,52 @@ function RoutinesPage() {
         </form>
       )}
 
-      <ul className="space-y-2">
-        {routines.map((r) => (
-          <li key={r.id} className="glass border border-border/60 rounded-2xl p-4 animate-fade-up group">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => toggle(r.id)}
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${
-                  r.completedToday ? "bg-foreground border-foreground" : "border-muted-foreground/40 hover:border-foreground"
-                }`}
-              >
-                {r.completedToday && <span className="w-2 h-2 rounded-full bg-background" />}
-              </button>
-              <div className="flex-1 min-w-0">
-                <p className={`font-medium text-sm ${r.completedToday ? "text-muted-foreground line-through" : ""}`}>
-                  {r.title}
-                </p>
-                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{r.time}</span>
-                  <span className="flex items-center gap-1"><Flame className="w-3 h-3" />{r.streak}d</span>
-                  <span className="flex gap-0.5">
-                    {DAY_LABELS.map((l, i) => (
-                      <span key={i} className={r.days.includes(i as Weekday) ? "text-foreground" : "opacity-30"}>{l}</span>
-                    ))}
-                  </span>
+      {routines.length === 0 ? (
+        <p className="text-sm text-muted-foreground glass border border-border/60 rounded-xl px-4 py-10 text-center">
+          No routines yet. Tap + to create one.
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {routines.map((r) => {
+            const done = isRoutineDone(r.id);
+            return (
+              <li key={r.id} className="glass border border-border/60 rounded-2xl p-4 animate-fade-up group">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => toggleRoutine(r.id)}
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${
+                      done ? "bg-foreground border-foreground" : "border-muted-foreground/40 hover:border-foreground"
+                    }`}
+                  >
+                    {done && <span className="w-2 h-2 rounded-full bg-background" />}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-medium text-sm ${done ? "text-muted-foreground line-through" : ""}`}>
+                      {r.title}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{r.time}</span>
+                      <span className="flex items-center gap-1"><Flame className="w-3 h-3" />{routineStreak(r.id)}d</span>
+                      <span className="flex gap-0.5">
+                        {DAY_LABELS.map((l, i) => (
+                          <span key={i} className={r.days.includes(i as Weekday) ? "text-foreground" : "opacity-30"}>{l}</span>
+                        ))}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => deleteRoutine(r.id)}
+                    className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all p-1.5"
+                    aria-label="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-              </div>
-              <button
-                onClick={() => remove(r.id)}
-                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all p-1.5"
-                aria-label="Delete"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </AppShell>
   );
 }
