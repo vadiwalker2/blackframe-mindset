@@ -38,15 +38,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
-
   const signInWithGoogle = async () => {
-    const redirectUrl = window.location.origin;
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: redirectUrl,
-      },
-    });
+    try {
+      console.log("LOGIN CLICKED");
+
+      const redirectUrl = window.location.origin;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
+
+      console.log("SUPABASE RESPONSE:", data, error);
+
+      if (error) {
+        console.error("AUTH ERROR:", error);
+      }
+    } catch (err) {
+      console.error("FATAL ERROR:", err);
+    }
   };
 
   const signOut = async () => {
