@@ -5,11 +5,8 @@ import {
   createContext, useContext, useEffect, useMemo, useRef, useState,
   type ReactNode,
 } from "react";
-<<<<<<< HEAD
 import { useAuth } from "./auth";
 import { api } from "./api";
-=======
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
 
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -97,10 +94,7 @@ interface StoreValue {
   unarchiveTask: (taskId: string) => void;
   // bulk
   resetAllData: () => void;
-<<<<<<< HEAD
   overwriteState: (newState: PersistedState) => void;
-=======
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
   // analytics helpers
   routineCompletionsForDate: (date: string) => number;
   scheduledRoutineCountForDate: (date: string) => number;
@@ -125,10 +119,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedState>(DEFAULT_STATE);
   const [now, setNow] = useState<Date>(() => new Date());
   const hydrated = useRef(false);
-<<<<<<< HEAD
   const { user } = useAuth();
-=======
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
 
   // Hydrate from localStorage on client
   useEffect(() => {
@@ -186,7 +177,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const toggleRoutine = (routineId: string) => {
     setState((s) => {
       const exists = s.routineLogs.some((l) => l.routineId === routineId && l.date === today);
-<<<<<<< HEAD
       const isDone = !exists;
       if (user) {
         if (isDone) {
@@ -195,8 +185,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           api.deleteRoutineLog(routineId, today, user.id).catch(console.error);
         }
       }
-=======
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
       return {
         ...s,
         routineLogs: exists
@@ -234,7 +222,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const addRoutine: StoreValue["addRoutine"] = ({ title, time, days }) => {
-<<<<<<< HEAD
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
     
@@ -247,21 +234,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState((s) => ({
       ...s,
       routines: [...s.routines, { id, title, time, days, createdAt }],
-=======
-    setState((s) => ({
-      ...s,
-      routines: [...s.routines, {
-        id: crypto.randomUUID(), title, time, days, createdAt: new Date().toISOString(),
-      }],
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
     }));
   };
 
   const deleteRoutine = (routineId: string) => {
-<<<<<<< HEAD
     if (user) api.deleteRoutine(routineId).catch(console.error);
-=======
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
     setState((s) => ({
       ...s,
       routines: s.routines.filter((r) => r.id !== routineId),
@@ -273,7 +250,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const addTask = (title: string) => {
     const trimmed = title.trim();
     if (!trimmed) return;
-<<<<<<< HEAD
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
     
@@ -287,19 +263,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...s,
       tasks: [
         { id, title: trimmed, createdAt, completedAt: null, archived: false },
-=======
-    setState((s) => ({
-      ...s,
-      tasks: [
-        { id: crypto.randomUUID(), title: trimmed, createdAt: new Date().toISOString(), completedAt: null, archived: false },
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
         ...s.tasks,
       ],
     }));
   };
 
   const toggleTask = (taskId: string) => {
-<<<<<<< HEAD
     setState((s) => {
       const task = s.tasks.find((t) => t.id === taskId);
       if (!task) return s;
@@ -343,24 +312,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (user) api.updateTask(taskId, { archived: false }).catch(console.error);
     setState((s) => ({ ...s, tasks: s.tasks.map((t) => t.id === taskId ? { ...t, archived: false } : t) }));
   };
-=======
-    setState((s) => ({
-      ...s,
-      tasks: s.tasks.map((t) =>
-        t.id === taskId ? { ...t, completedAt: t.completedAt ? null : new Date().toISOString() } : t
-      ),
-    }));
-  };
-
-  const deleteTask = (taskId: string) =>
-    setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== taskId) }));
-
-  const archiveTask = (taskId: string) =>
-    setState((s) => ({ ...s, tasks: s.tasks.map((t) => t.id === taskId ? { ...t, archived: true } : t) }));
-
-  const unarchiveTask = (taskId: string) =>
-    setState((s) => ({ ...s, tasks: s.tasks.map((t) => t.id === taskId ? { ...t, archived: false } : t) }));
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
 
   // Today view: not archived. Includes:
   //  - tasks not completed (any created date) → carry-over
@@ -396,13 +347,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState({ ...DEFAULT_STATE, routines: [], tasks: [], routineLogs: [] });
   };
 
-<<<<<<< HEAD
   const overwriteState = (newState: PersistedState) => {
     setState(newState);
   };
-
-=======
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
   const value: StoreValue = {
     routines: state.routines,
     tasks: state.tasks,
@@ -423,10 +370,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     archiveTask,
     unarchiveTask,
     resetAllData,
-<<<<<<< HEAD
     overwriteState,
-=======
->>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
     routineCompletionsForDate,
     scheduledRoutineCountForDate,
   };
