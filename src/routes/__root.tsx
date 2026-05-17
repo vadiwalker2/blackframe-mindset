@@ -11,8 +11,11 @@ import {
 import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/lib/theme";
 import { StoreProvider } from "@/lib/store";
+<<<<<<< HEAD
 import { AuthProvider } from "@/lib/auth";
 import { MigrationManager } from "@/components/migration-manager";
+=======
+>>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
 
 function NotFoundComponent() {
   return (
@@ -109,6 +112,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+<<<<<<< HEAD
         <AuthProvider>
           <StoreProvider>
             <MigrationManager>
@@ -116,6 +120,11 @@ function RootComponent() {
             </MigrationManager>
           </StoreProvider>
         </AuthProvider>
+=======
+        <StoreProvider>
+          <Outlet />
+        </StoreProvider>
+>>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
       </ThemeProvider>
     </QueryClientProvider>
   );

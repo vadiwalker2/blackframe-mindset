@@ -4,7 +4,10 @@ import { Moon, Sun, Bell, LogOut, Trash2, User, ChevronRight } from "lucide-reac
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useTheme } from "@/lib/theme";
 import { useStore } from "@/lib/store";
+<<<<<<< HEAD
 import { useAuth } from "@/lib/auth";
+=======
+>>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -51,7 +54,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function SettingsPage() {
   const { theme, toggle } = useTheme();
   const { resetAllData, routines, allTasks } = useStore();
+<<<<<<< HEAD
   const { user, signInWithGoogle, signOut } = useAuth();
+=======
+>>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
   const [confirming, setConfirming] = useState(false);
 
   const handleReset = () => {
@@ -66,6 +72,7 @@ function SettingsPage() {
 
       <Section title="Account">
         <div className="px-4 py-4 flex items-center gap-3">
+<<<<<<< HEAD
           <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
             {user?.user_metadata?.avatar_url ? (
               <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
@@ -85,6 +92,18 @@ function SettingsPage() {
               Sign in
             </button>
           )}
+=======
+          <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+            <User className="w-4 h-4 text-muted-foreground" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Guest</p>
+            <p className="text-xs text-muted-foreground truncate">Sign in coming soon</p>
+          </div>
+          <button className="text-xs font-medium px-3 py-1.5 rounded-lg bg-foreground text-background hover:opacity-90 transition-opacity">
+            Sign in
+          </button>
+>>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
         </div>
       </Section>
 
@@ -126,11 +145,19 @@ function SettingsPage() {
             {confirming ? "Tap again to confirm" : "Reset all data"}
           </span>
         </button>
+<<<<<<< HEAD
         {user && <Row icon={LogOut} label="Sign out" onClick={signOut} />}
       </Section>
 
       <p className="text-center text-[11px] text-muted-foreground mt-8">
         Blackframe v0.3 · Phase 3 · Cloud Sync
+=======
+        <Row icon={LogOut} label="Sign out" />
+      </Section>
+
+      <p className="text-center text-[11px] text-muted-foreground mt-8">
+        Blackframe v0.2 · Phase 2 · Local state engine
+>>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
       </p>
     </AppShell>
   );

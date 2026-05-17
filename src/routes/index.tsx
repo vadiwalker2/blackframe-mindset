@@ -4,7 +4,10 @@ import { Flame, Plus, Check, Clock, Quote } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useStore, toLocalDateStr } from "@/lib/store";
 import { getQuoteOfDay } from "@/lib/mock-data";
+<<<<<<< HEAD
 import { useAuth } from "@/lib/auth";
+=======
+>>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,7 +25,10 @@ function TodayPage() {
     isRoutineDone, toggleRoutine, routineStreak,
     toggleTask, addTask, routines,
   } = useStore();
+<<<<<<< HEAD
   const { user, signInWithGoogle } = useAuth();
+=======
+>>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
   const [draft, setDraft] = useState("");
 
   const completedRoutines = todaysRoutines.filter((r) => isRoutineDone(r.id)).length;
@@ -62,6 +68,7 @@ function TodayPage() {
         }
       />
 
+<<<<<<< HEAD
       {/* Auth CTA */}
       {!user && (
         <section className="mb-6 animate-fade-up" style={{ animationDelay: "30ms" }}>
@@ -80,6 +87,8 @@ function TodayPage() {
         </section>
       )}
 
+=======
+>>>>>>> 97c7925c995387124162f8826c09cbab7f7e05e2
       {/* Progress + streak */}
       <section className="grid grid-cols-5 gap-3 mb-6 animate-fade-up" style={{ animationDelay: "60ms" }}>
         <div className="col-span-3 glass rounded-2xl p-5 border border-border/60">
