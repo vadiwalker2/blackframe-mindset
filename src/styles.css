@@ -155,7 +155,7 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { scrollbar-width: none; }
   .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
-  .safe-top { padding-top: max(env(safe-area-inset-top), 0.5rem); }
+  .safe-top { padding-top: calc(3.5rem + env(safe-area-inset-top, 0px)); }
 }
 
 @keyframes fade-up {

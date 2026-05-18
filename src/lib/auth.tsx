@@ -18,29 +18,88 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    let isMounted = true;
+
+    const handleAuthRedirect = async () => {
+      const hasAuthParams = 
+        window.location.hash.includes("access_token") || 
+        window.location.hash.includes("id_token") ||
+        window.location.hash.includes("error") ||
+        window.location.search.includes("code=") ||
+        window.location.search.includes("error=");
+
+      if (hasAuthParams) {
+        try {
+          // Exchange PKCE code or load implicit session
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          if (isMounted && currentSession) {
+            setSession(currentSession);
+            setUser(currentSession.user);
+          }
+        } catch (err) {
+          console.error("Error exchanging session during redirect:", err);
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+            // Clean up the URL only after session is confirmed or resolved
+            const cleanUrl = window.location.origin + "/";
+            window.history.replaceState(null, "", cleanUrl);
+          }
+        }
+      } else {
+        // Standard non-redirect app load
+        try {
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          if (isMounted) {
+            setSession(currentSession);
+            setUser(currentSession?.user ?? null);
+            setIsLoading(false);
+          }
+        } catch (err) {
+          console.error("Error fetching session on app load:", err);
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }
+      }
+    };
+
+    handleAuthRedirect();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      async (event, currentSession) => {
+        if (!isMounted) return;
+
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
         setIsLoading(false);
+
+        // Sanitize parameters if signed in through redirect
+        if (event === "SIGNED_IN" || currentSession) {
+          const hasRedirectParams = 
+            window.location.hash.includes("access_token") || 
+            window.location.hash.includes("id_token") ||
+            window.location.hash.includes("error") ||
+            window.location.search.includes("code=") ||
+            window.location.search.includes("error=");
+          
+          if (hasRedirectParams) {
+            const cleanUrl = window.location.origin + "/";
+            window.history.replaceState(null, "", cleanUrl);
+          }
+        }
       }
     );
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   const signInWithGoogle = async () => {
-    const redirectUrl = window.location.origin;
+    const redirectUrl = window.location.origin + "/";
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
