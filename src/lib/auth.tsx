@@ -19,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let isMounted = true;
+    let isInitializing = true;
 
     const handleAuthRedirect = async () => {
       const hasAuthParams = 
@@ -28,38 +29,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.location.search.includes("code=") ||
         window.location.search.includes("error=");
 
-      if (hasAuthParams) {
-        try {
-          // Exchange PKCE code or load implicit session
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          if (isMounted && currentSession) {
-            setSession(currentSession);
-            setUser(currentSession.user);
-          }
-        } catch (err) {
-          console.error("Error exchanging session during redirect:", err);
-        } finally {
-          if (isMounted) {
-            setIsLoading(false);
-            // Clean up the URL only after session is confirmed or resolved
+      try {
+        // 3. Fix race condition: Call getSession() FIRST
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        if (isMounted) {
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+        }
+      } catch (err) {
+        console.error("Error exchanging session during redirect/init:", err);
+      } finally {
+        if (isMounted) {
+          // 4. URL cleanup MUST happen AFTER session resolution and BEFORE ending loading
+          if (hasAuthParams) {
             const cleanUrl = window.location.origin + "/";
             window.history.replaceState(null, "", cleanUrl);
           }
-        }
-      } else {
-        // Standard non-redirect app load
-        try {
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          if (isMounted) {
-            setSession(currentSession);
-            setUser(currentSession?.user ?? null);
-            setIsLoading(false);
-          }
-        } catch (err) {
-          console.error("Error fetching session on app load:", err);
-          if (isMounted) {
-            setIsLoading(false);
-          }
+          isInitializing = false;
+          setIsLoading(false);
         }
       }
     };
@@ -70,6 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         if (!isMounted) return;
+
+        // 5. Ensure onAuthStateChange sync does NOT trigger UI rerender before session is ready
+        if (isInitializing) {
+          return;
+        }
 
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
@@ -112,9 +105,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  // To prevent UI flicker, we wait until the initial auth check is done.
-  // Alternatively, we could render children but let components handle `isLoading`.
-  // Here we just render children since the UI works without auth anyway.
+  // 2. BLOCK premature rendering of routes until session loading is complete
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1a1a1f]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider
