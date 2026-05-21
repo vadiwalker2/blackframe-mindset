@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { Flame, Plus, Check, Clock, Quote } from "lucide-react";
+import { Flame, Plus, Check, Clock, Quote, Activity, ArrowUpRight, CircleDot } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { useStore, toLocalDateStr } from "@/lib/store";
 import { getQuoteOfDay } from "@/lib/mock-data";
@@ -20,7 +20,8 @@ function TodayPage() {
   const {
     now, today, todaysRoutines, todaysTasks,
     isRoutineDone, toggleRoutine, routineStreak,
-    toggleTask, addTask, routines,
+    toggleTask, addTask, routines, allTasks,
+    routineCompletionsForDate, scheduledRoutineCountForDate,
   } = useStore();
   const { user, signInWithGoogle } = useAuth();
   const [draft, setDraft] = useState("");
@@ -115,6 +116,55 @@ function TodayPage() {
   }, [user]);
 
   const totalCompleted = completedRoutinesCount + completedTasksCount;
+
+  const yesterdayStr = useMemo(() => {
+    const d = new Date(today + "T00:00:00");
+    d.setDate(d.getDate() - 1);
+    return toLocalDateStr(d);
+  }, [today]);
+
+  const reflection = useMemo(() => {
+    const yRoutinesDone = routineCompletionsForDate(yesterdayStr);
+    const yRoutinesScheduled = scheduledRoutineCountForDate(yesterdayStr);
+    const yTasksDone = allTasks.filter(t => t.completedAt && toLocalDateStr(new Date(t.completedAt)) === yesterdayStr).length;
+    
+    const yCompleted = yRoutinesDone + yTasksDone;
+    const tCompleted = completedRoutinesCount + completedTasksCount;
+    
+    if (yRoutinesScheduled === 0 && yCompleted === 0) {
+      return {
+        label: "Day One",
+        message: "Every system begins with a first day. Momentum starts quietly.",
+        icon: "circle"
+      };
+    }
+    
+    if (tCompleted > yCompleted) {
+      return {
+        label: "Building Momentum",
+        message: `${tCompleted - yCompleted} more intentions completed than yesterday. Momentum is building.`,
+        icon: "up"
+      };
+    } else if (tCompleted === yCompleted && tCompleted > 0) {
+      return {
+        label: "Stable Rhythm",
+        message: "Your rhythm is stabilizing. You have matched yesterday's pace exactly.",
+        icon: "neutral"
+      };
+    } else if (yCompleted === 0) {
+      return {
+        label: "Quiet Recovery",
+        message: "Momentum paused yesterday. Today is a fresh page. Consistency returns through repetition.",
+        icon: "neutral"
+      };
+    } else {
+      return {
+        label: "Quiet Momentum",
+        message: `Yesterday you completed ${yCompleted} intentions. Focus on the single next right action today.`,
+        icon: "neutral"
+      };
+    }
+  }, [yesterdayStr, routineCompletionsForDate, scheduledRoutineCountForDate, allTasks, completedRoutinesCount, completedTasksCount]);
 
   return (
     <AppShell>
@@ -297,6 +347,26 @@ function TodayPage() {
               <span className="text-[10px] font-normal text-muted-foreground/60">days</span>
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Momentum Reflection Card */}
+      <section className="mb-6 animate-fade-up transition-premium" style={{ animationDelay: "105ms" }}>
+        <div className="glass rounded-xl p-4 border border-border/20 flex flex-col gap-2 relative overflow-hidden transition-premium hover:border-border/30 duration-500">
+          <div className="flex items-center justify-between select-none">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 flex items-center gap-1.5">
+              {reflection.icon === 'up' && <ArrowUpRight className="w-3 h-3 text-emerald-500/70" />}
+              {reflection.icon === 'neutral' && <Activity className="w-3 h-3 text-muted-foreground/50" />}
+              {reflection.icon === 'circle' && <CircleDot className="w-3 h-3 text-muted-foreground/40" />}
+              Reflection
+            </span>
+            <span className="text-[10px] font-medium text-foreground/70 bg-foreground/5 px-2 py-0.5 rounded-full border border-border/10">
+              {reflection.label}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground/70 leading-relaxed font-medium">
+            {reflection.message}
+          </p>
         </div>
       </section>
 
