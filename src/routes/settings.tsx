@@ -50,7 +50,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function SettingsPage() {
   const { theme, toggle } = useTheme();
-  const { resetAllData, routines, allTasks } = useStore();
+  const { resetAllData, routines, allTasks, identity } = useStore();
   const { user, signInWithGoogle, signOut } = useAuth();
   const [confirming, setConfirming] = useState(false);
 
@@ -84,6 +84,17 @@ function SettingsPage() {
             >
               Sign in
             </button>
+          )}
+        </div>
+        <div className="px-4 py-3.5 border-t border-border/60 flex items-center justify-between bg-secondary/10">
+          <div>
+            <p className="text-xs font-medium text-foreground/80">{identity.title}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Level {identity.level} · {identity.totalXP} XP</p>
+          </div>
+          {identity.nextTitle && (
+            <div className="text-right">
+              <p className="text-[10px] text-muted-foreground">Next: {identity.nextTitle}</p>
+            </div>
           )}
         </div>
       </Section>

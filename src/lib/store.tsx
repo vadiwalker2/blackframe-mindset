@@ -98,6 +98,16 @@ interface StoreValue {
   // analytics helpers
   routineCompletionsForDate: (date: string) => number;
   scheduledRoutineCountForDate: (date: string) => number;
+  // identity
+  identity: {
+    level: number;
+    title: string;
+    totalXP: number;
+    nextXP: number | null;
+    nextTitle: string | null;
+    remainingXP: number;
+    progressPct: number;
+  };
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -347,6 +357,63 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState({ ...DEFAULT_STATE, routines: [], tasks: [], routineLogs: [] });
   };
 
+  const identity = useMemo(() => {
+    const completedTasksCount = state.tasks.filter(t => t.completedAt).length;
+    const logsCount = state.routineLogs.length;
+    
+    let totalStreak = 0;
+    for (const r of state.routines) {
+      totalStreak += routineStreak(r.id);
+    }
+    
+    const datesWithLogs = new Set(state.routineLogs.map(l => l.date));
+    let perfectDays = 0;
+    for (const d of datesWithLogs) {
+      const scheduled = scheduledRoutineCountForDate(d);
+      if (scheduled > 0) {
+        if (routineCompletionsForDate(d) >= scheduled) {
+          perfectDays++;
+        }
+      }
+    }
+
+    const totalXP = (completedTasksCount * 10) + (logsCount * 5) + (totalStreak * 15) + (perfectDays * 20);
+
+    const LEVELS = [
+      { minXP: 0, title: "Initiate" },
+      { minXP: 100, title: "Focused" },
+      { minXP: 300, title: "Consistent" },
+      { minXP: 600, title: "Disciplined" },
+      { minXP: 1000, title: "Relentless" },
+      { minXP: 1500, title: "Unshaken" },
+      { minXP: 2500, title: "Unstoppable" },
+    ];
+
+    let levelIdx = 0;
+    for (let i = 0; i < LEVELS.length; i++) {
+      if (totalXP >= LEVELS[i].minXP) levelIdx = i;
+    }
+
+    const currentBase = LEVELS[levelIdx].minXP;
+    const nextLevelInfo = levelIdx < LEVELS.length - 1 ? LEVELS[levelIdx + 1] : null;
+    const nextXP = nextLevelInfo ? nextLevelInfo.minXP : null;
+    let progressPct = 100;
+    if (nextXP !== null) {
+      progressPct = Math.min(100, Math.max(0, ((totalXP - currentBase) / (nextXP - currentBase)) * 100));
+    }
+
+    return {
+      level: levelIdx + 1,
+      title: LEVELS[levelIdx].title,
+      totalXP,
+      nextXP,
+      nextTitle: nextLevelInfo ? nextLevelInfo.title : null,
+      remainingXP: nextXP !== null ? nextXP - totalXP : 0,
+      progressPct
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.tasks, state.routineLogs, state.routines, now]);
+
   const overwriteState = (newState: PersistedState) => {
     setState(newState);
   };
@@ -373,6 +440,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     overwriteState,
     routineCompletionsForDate,
     scheduledRoutineCountForDate,
+    identity,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

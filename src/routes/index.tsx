@@ -22,6 +22,7 @@ function TodayPage() {
     isRoutineDone, toggleRoutine, routineStreak,
     toggleTask, addTask, routines, allTasks,
     routineCompletionsForDate, scheduledRoutineCountForDate,
+    identity,
   } = useStore();
   const { user, signInWithGoogle } = useAuth();
   const [draft, setDraft] = useState("");
@@ -275,6 +276,51 @@ function TodayPage() {
               </p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Identity Card */}
+      <section className="mb-6 animate-fade-up transition-premium" style={{ animationDelay: "75ms" }}>
+        <div className="glass rounded-xl p-5 border border-border/30 relative overflow-hidden transition-premium hover:border-border/40 duration-500">
+          <div className="flex items-center justify-between mb-4 select-none">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+              Current Identity
+            </span>
+            {identity.nextXP !== null && (
+              <span className="text-[10px] text-muted-foreground/40 font-medium">
+                Next: {identity.nextTitle}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-baseline gap-2">
+              <h3 className="text-lg font-semibold text-foreground tracking-tight select-none">
+                {identity.title}
+              </h3>
+              <span className="text-xs text-muted-foreground/60 font-medium select-none">
+                — Level {identity.level}
+              </span>
+            </div>
+            
+            <div className="w-full h-1 bg-secondary/30 rounded-full overflow-hidden mt-2">
+              <div 
+                className="h-full bg-foreground/80 rounded-full transition-all duration-1000 ease-out" 
+                style={{ width: `${identity.progressPct}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between mt-1 select-none">
+              <span className="text-[10px] text-muted-foreground/60 font-mono">
+                {identity.totalXP} {identity.nextXP !== null ? `/ ${identity.nextXP} XP` : 'XP'}
+              </span>
+              {identity.remainingXP > 0 && (
+                <span className="text-[10px] text-muted-foreground/50">
+                  {identity.remainingXP} XP remaining
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
