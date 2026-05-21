@@ -80,8 +80,8 @@ function TasksPage() {
 
       {filtered.length === 0 ? (
         <div className="glass border border-border/60 rounded-2xl py-16 text-center animate-fade-up">
-          <Inbox className="w-8 h-8 mx-auto text-muted-foreground mb-3" />
-          <p className="text-sm text-muted-foreground">Nothing here.</p>
+          <Inbox className="w-8 h-8 mx-auto text-muted-foreground mb-3 opacity-50" />
+          <p className="text-sm text-muted-foreground">No active tasks. Your mind is clear.</p>
         </div>
       ) : (
         <ul className="space-y-2">

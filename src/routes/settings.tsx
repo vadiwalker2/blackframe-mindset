@@ -130,11 +130,11 @@ function SettingsPage() {
         <button
           onClick={handleReset}
           onBlur={() => setConfirming(false)}
-          className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-secondary/50 transition-colors text-left text-destructive"
+          className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-secondary/50 transition-colors text-left text-destructive/80 hover:text-destructive"
         >
           <Trash2 className="w-4 h-4" />
           <span className="text-sm font-medium flex-1">
-            {confirming ? "Tap again to confirm" : "Reset all data"}
+            {confirming ? "Tap again to confirm" : "Clear all data"}
           </span>
         </button>
         {user && <Row icon={LogOut} label="Sign out" onClick={signOut} />}

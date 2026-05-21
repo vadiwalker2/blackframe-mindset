@@ -4,7 +4,7 @@ import { BottomNav } from "./bottom-nav";
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen w-full">
-      <main className="mx-auto max-w-2xl px-5 pt-14 pb-32 safe-top">
+      <main className="mx-auto max-w-2xl px-5 pt-14 pb-36 safe-top">
         {children}
       </main>
       <BottomNav />

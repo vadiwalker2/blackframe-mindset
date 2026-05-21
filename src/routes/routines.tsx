@@ -41,7 +41,7 @@ function RoutinesPage() {
         action={
           <button
             onClick={() => setCreating((v) => !v)}
-            className="rounded-full bg-foreground text-background w-10 h-10 flex items-center justify-center hover:opacity-90 active:scale-95 transition-all"
+            className="rounded-full bg-foreground text-background w-10 h-10 flex items-center justify-center hover:opacity-90 active:scale-[0.96] transition-premium"
             aria-label={creating ? "Cancel" : "New routine"}
           >
             {creating ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -100,8 +100,8 @@ function RoutinesPage() {
       )}
 
       {routines.length === 0 ? (
-        <p className="text-sm text-muted-foreground glass border border-border/60 rounded-xl px-4 py-10 text-center">
-          No routines yet. Tap + to create one.
+        <p className="text-sm text-muted-foreground glass border border-border/40 rounded-xl px-4 py-10 text-center">
+          Quiet space. No routines scheduled.
         </p>
       ) : (
         <ul className="space-y-2">

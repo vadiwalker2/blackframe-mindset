@@ -180,7 +180,7 @@ function StatsPage() {
       <section className="glass border border-border/60 rounded-2xl p-5 mb-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Top routines (7d)</h2>
         {topRoutinesProper.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No routines yet.</p>
+          <p className="text-sm text-muted-foreground">No history yet. Consistency starts quietly.</p>
         ) : (
           <ul className="space-y-3">
             {topRoutinesProper.map((r) => (

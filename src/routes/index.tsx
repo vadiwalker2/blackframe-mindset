@@ -456,11 +456,11 @@ function TodayPage() {
         {activeRoutines.length === 0 ? (
           todaysRoutines.length === 0 ? (
             <div className="text-center py-5 border border-dashed border-border/20 rounded-xl bg-white/[0.005]">
-              <p className="text-xs text-muted-foreground/40">No routines scheduled today.</p>
+              <p className="text-xs text-muted-foreground/40">Quiet space. No routines scheduled.</p>
             </div>
           ) : activeRoutines.length === 0 && (
             <div className="text-center py-4 border border-dashed border-border/10 rounded-xl bg-white/[0.002]">
-              <p className="text-xs text-muted-foreground/30">All routines finished.</p>
+              <p className="text-xs text-muted-foreground/30">All routines finished. Quiet momentum.</p>
             </div>
           )
         ) : (
@@ -469,7 +469,7 @@ function TodayPage() {
               <li key={r.id}>
                 <button
                   onClick={() => toggleRoutine(r.id)}
-                  className="w-full glass rounded-xl border border-border/30 px-4 py-3.5 flex items-center gap-3 text-left transition-premium hover:border-border/60 hover:bg-white/[0.015] active:scale-[0.985] cursor-pointer group duration-300"
+                  className="w-full glass rounded-xl border border-border/30 px-4 py-3.5 flex items-center gap-3 text-left transition-premium hover:border-border/60 hover:bg-white/[0.015] active:scale-[0.98] cursor-pointer group duration-300"
                 >
                   <span className="w-5 h-5 rounded-full border border-muted-foreground/30 flex items-center justify-center shrink-0 transition-premium relative overflow-hidden group-hover:border-foreground/40 duration-300">
                     <span className="w-2 h-2 rounded-full bg-foreground scale-0 opacity-0 group-hover:scale-50 group-hover:opacity-40 transition-premium duration-300" />
@@ -518,11 +518,11 @@ function TodayPage() {
         {activeTasks.length === 0 ? (
           todaysTasks.length === 0 ? (
             <div className="text-center py-5 border border-dashed border-border/20 rounded-xl bg-white/[0.005]">
-              <p className="text-xs text-muted-foreground/40">Inbox zero. Add what matters.</p>
+              <p className="text-xs text-muted-foreground/40">No active tasks. Your mind is clear.</p>
             </div>
           ) : activeTasks.length === 0 && (
             <div className="text-center py-4 border border-dashed border-border/10 rounded-xl bg-white/[0.002]">
-              <p className="text-xs text-muted-foreground/30">All tasks completed.</p>
+              <p className="text-xs text-muted-foreground/30">All tasks completed. Rest now.</p>
             </div>
           )
         ) : (
@@ -533,7 +533,7 @@ function TodayPage() {
                 <li key={t.id}>
                   <button
                     onClick={() => toggleTask(t.id)}
-                    className="w-full glass rounded-xl border border-border/30 px-4 py-3.5 flex items-center gap-3 text-left transition-premium hover:border-border/60 hover:bg-white/[0.015] active:scale-[0.985] cursor-pointer group duration-300"
+                    className="w-full glass rounded-xl border border-border/30 px-4 py-3.5 flex items-center gap-3 text-left transition-premium hover:border-border/60 hover:bg-white/[0.015] active:scale-[0.98] cursor-pointer group duration-300"
                   >
                     <span className="w-5 h-5 rounded-md border border-muted-foreground/30 flex items-center justify-center shrink-0 transition-premium relative overflow-hidden group-hover:border-foreground/40 duration-300">
                       <span className="w-2 h-2 rounded bg-foreground scale-0 opacity-0 group-hover:scale-50 group-hover:opacity-40 transition-premium duration-300" />
