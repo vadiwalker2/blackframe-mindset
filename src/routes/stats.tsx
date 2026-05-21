@@ -88,6 +88,55 @@ function StatsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routines, week]);
 
+  const heatmapData = useMemo(() => {
+    const days = [];
+    const START_OFFSET = 89; // 90 days total including today
+    
+    const dStart = new Date(now);
+    dStart.setDate(dStart.getDate() - START_OFFSET);
+    dStart.setHours(0, 0, 0, 0);
+    
+    // Fill leading empty days to align weekdays (Sunday = 0, Monday = 1...)
+    const startWeekday = dStart.getDay();
+    for (let i = 0; i < startWeekday; i++) {
+      days.push({ isPadding: true, id: `pad-${i}` });
+    }
+
+    for (let i = START_OFFSET; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      const date = toLocalDateStr(d);
+      
+      const scheduled = scheduledRoutineCountForDate(date);
+      const routineDone = routineCompletionsForDate(date);
+      const completedTasks = allTasks.filter(
+        (t) => t.completedAt && toLocalDateStr(new Date(t.completedAt)) === date
+      ).length;
+
+      const totalExpected = scheduled + completedTasks;
+      const totalDone = routineDone + completedTasks;
+      
+      let pct = 0;
+      if (totalExpected > 0) {
+        pct = Math.round((totalDone / totalExpected) * 100);
+      } else if (totalDone > 0) {
+        pct = 100;
+      }
+
+      days.push({
+        isPadding: false,
+        id: date,
+        displayDate: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+        done: totalDone,
+        pct,
+        isToday: i === 0,
+      });
+    }
+    return days;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routines, allTasks, now.toDateString()]);
+
   return (
     <AppShell>
       <PageHeader eyebrow="This week" title="Statistics" subtitle="Patterns become identity. Watch yours." />
@@ -128,7 +177,7 @@ function StatsPage() {
         </div>
       </section>
 
-      <section className="glass border border-border/60 rounded-2xl p-5 animate-fade-up" style={{ animationDelay: "160ms" }}>
+      <section className="glass border border-border/60 rounded-2xl p-5 mb-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Top routines (7d)</h2>
         {topRoutinesProper.length === 0 ? (
           <p className="text-sm text-muted-foreground">No routines yet.</p>
@@ -147,6 +196,37 @@ function StatsPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="glass border border-border/60 rounded-2xl p-5 animate-fade-up" style={{ animationDelay: "220ms" }}>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Consistency (90d)</h2>
+        <div className="flex justify-center w-full py-2">
+          <div className="grid grid-rows-7 grid-flow-col gap-1.5 w-max">
+            {heatmapData.map((d: any) => {
+              if (d.isPadding) {
+                return <div key={d.id} className="w-3 h-3 md:w-3.5 md:h-3.5" />;
+              }
+
+              let bgClass = "bg-secondary/30 border border-border/10"; 
+              if (d.pct > 0 && d.pct < 40) bgClass = "bg-foreground/30";
+              else if (d.pct >= 40 && d.pct < 80) bgClass = "bg-foreground/60";
+              else if (d.pct >= 80) bgClass = "bg-foreground/90";
+
+              return (
+                <div 
+                  key={d.id} 
+                  className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-[2px] transition-all duration-300 ${bgClass} ${d.isToday ? 'ring-1 ring-foreground/60 ring-offset-2 ring-offset-background/50 z-10' : ''} group relative cursor-pointer hover:ring-1 hover:ring-foreground/40 hover:scale-[1.15] hover:z-20`}
+                >
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 w-max bg-background border border-border/40 rounded-lg p-2.5 shadow-2xl flex flex-col gap-1">
+                     <p className="text-[11px] font-semibold text-foreground/90">{d.displayDate}</p>
+                     <p className="text-[10px] text-muted-foreground">{d.done} intentions completed</p>
+                     <p className="text-[10px] text-muted-foreground">{d.pct}% consistency</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </section>
     </AppShell>
   );
